@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import MengySmod.joyevents.Joyevents;
+import MengySmod.joyevents.gameplay.impl.LootGambleGameplay;
 import MengySmod.joyevents.gameplay.impl.PositionSwapGameplay;
 import MengySmod.joyevents.gameplay.impl.RandomTeleportGameplay;
 import MengySmod.joyevents.gameplay.impl.SharedHealthGameplay;
@@ -44,6 +45,7 @@ public final class GameplayManager {
         register(new PositionSwapGameplay());
         register(new RandomTeleportGameplay());
         register(new SharedHealthGameplay());
+        register(new LootGambleGameplay());
     }
 
     private static void register(Gameplay gameplay) {
@@ -150,7 +152,8 @@ public final class GameplayManager {
                 JoyNetwork.sendHud(player, new GameplayHudPayload(
                         gameplay.id(),
                         runtime.enabled,
-                        runtime.enabled ? runtime.ticksUntilNext : 0,
+                        gameplay.periodic(),
+                        runtime.enabled && gameplay.periodic() ? runtime.ticksUntilNext : 0,
                         detail,
                         pool));
             }

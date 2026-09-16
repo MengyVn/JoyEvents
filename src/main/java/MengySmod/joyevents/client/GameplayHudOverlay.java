@@ -16,6 +16,10 @@ import net.minecraft.resources.ResourceLocation;
  *
  * <p>所有开关都在 {@code joyevents-client.toml} 里，属于纯客户端显示偏好。
  * 只有服务端把某个玩法打开并同步了状态，这里才会出现对应行。</p>
+ *
+ * <p>多个玩法同时开启时，各行共用同一个起始坐标并依次向下累加 y（同一竖向堆叠），
+ * 因此位置互换 / 随机传送 / 物品赌博的倒计时彼此不会重叠；
+ * 只有周期型玩法才会显示倒计时（{@code periodic} 标记由服务端下发）。</p>
  */
 public final class GameplayHudOverlay implements LayeredDraw.Layer {
     public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Joyevents.MODID, "gameplay_hud");
@@ -54,7 +58,7 @@ public final class GameplayHudOverlay implements LayeredDraw.Layer {
         // ---- 位置互换 ----
         ClientHudState.Entry swap = ClientHudState.get("position_swap");
         if (swap != null) {
-            if (JoyConfig.hudSwapShowCountdown) {
+            if (JoyConfig.hudSwapShowCountdown && swap.periodic()) {
                 graphics.drawString(minecraft.font,
                         Component.translatable("joyevents.hud.position_swap.countdown", formatTime(swap.remainingSeconds())),
                         LEFT, y, COLOR_TIME, true);
@@ -74,9 +78,18 @@ public final class GameplayHudOverlay implements LayeredDraw.Layer {
 
         // ---- 随机传送 ----
         ClientHudState.Entry teleport = ClientHudState.get("random_teleport");
-        if (teleport != null && JoyConfig.hudTeleportShowCountdown) {
+        if (teleport != null && JoyConfig.hudTeleportShowCountdown && teleport.periodic()) {
             graphics.drawString(minecraft.font,
                     Component.translatable("joyevents.hud.random_teleport.countdown", formatTime(teleport.remainingSeconds())),
+                    LEFT, y, COLOR_TIME, true);
+            y += LINE_HEIGHT;
+        }
+
+        // ---- 物品赌博（仅在其“倒计时触发”开启时才有这一行）----
+        ClientHudState.Entry gamble = ClientHudState.get("loot_gamble");
+        if (gamble != null && JoyConfig.hudLootShowCountdown && gamble.periodic()) {
+            graphics.drawString(minecraft.font,
+                    Component.translatable("joyevents.hud.loot_gamble.countdown", formatTime(gamble.remainingSeconds())),
                     LEFT, y, COLOR_TIME, true);
             y += LINE_HEIGHT;
         }

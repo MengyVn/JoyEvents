@@ -29,11 +29,28 @@ public final class JoyEventsClient {
      */
     public static void registerConfigScreen(ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class,
-                (ModContainer mod, Screen parent) -> new ConfigurationScreen(container, parent));
+                (ModContainer mod, Screen parent) -> createConfigScreen(container, parent));
         // 明确打一条日志：这一行是“配置按钮为什么是灰的”这类问题的唯一线索，
         // 判定方式与 ModListScreen 启用按钮时用的调用链一致。
         Joyevents.LOGGER.info("配置界面扩展点注册结果: getCustomExtension(IConfigScreenFactory) = {}",
                 container.getCustomExtension(IConfigScreenFactory.class).isPresent());
+    }
+
+    /**
+     * 选择使用哪个配置界面。
+     *
+     * <p>正常情况下直接用 NeoForge 内置界面。只有在“单人世界已开放局域网”时，内置界面会把
+     * Server Config 的入口按钮禁用（{@code btn.active = false}），而分节界面内部并无此限制，
+     * 因此这时改用 {@link LocalServerConfigScreen} 直接进入分节界面，让服主仍能改玩法配置。</p>
+     *
+     * <p>远端服务器不改动：那里客户端改服务端配置不生效也不该被允许，仍由内置界面按只读处理。</p>
+     */
+    private static Screen createConfigScreen(ModContainer container, Screen parent) {
+        if (LocalServerConfigScreen.shouldBypassLanRestriction()) {
+            Joyevents.LOGGER.info("检测到单人世界已开放局域网，使用 JoyEvents 自定义配置入口（服务端配置仍可编辑）");
+            return new LocalServerConfigScreen(container, parent);
+        }
+        return new ConfigurationScreen(container, parent);
     }
 
     @SubscribeEvent

@@ -33,7 +33,7 @@ authors = "${mod_authors}" #optional
 
 # The description text for the mod (multi line!) (#mandatory)
 # 简介直接写在这里（UTF-8），不要放在 gradle.properties：那个文件按 ISO-8859-1 读取，中文会变成乱码。
-description = '''趣味玩法合集：位置互换、共享生命、随机传送，全部可在配置界面一键启停并调参。'''
+description = '''趣味玩法合集：位置互换、共享生命、随机传送、物品赌博，全部可在配置界面一键启停并调参。'''
 
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.
 #[[mixins]]

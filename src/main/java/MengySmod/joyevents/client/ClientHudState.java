@@ -18,6 +18,7 @@ public final class ClientHudState {
 
     /** 单个玩法的一条显示状态。 */
     public record Entry(boolean active,
+                        boolean periodic,
                         int remainingTicks,
                         boolean hasDetail,
                         String detailLabel,
@@ -41,6 +42,7 @@ public final class ClientHudState {
         }
         ENTRIES.put(payload.gameplayId(), new Entry(
                 true,
+                payload.periodic(),
                 payload.remainingTicks(),
                 payload.hasDetail(),
                 payload.detailLabel(),

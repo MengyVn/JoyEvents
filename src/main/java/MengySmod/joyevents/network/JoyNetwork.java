@@ -20,7 +20,7 @@ public final class JoyNetwork {
     private JoyNetwork() {}
 
     /** 网络协议版本：客户端与服务端不一致时会被 NeoForge 拒绝连接，便于排查版本错配。 */
-    public static final String PROTOCOL_VERSION = "1";
+    public static final String PROTOCOL_VERSION = "2";
 
     @SubscribeEvent
     static void onRegisterPayloads(final RegisterPayloadHandlersEvent event) {

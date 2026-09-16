@@ -13,12 +13,13 @@ import net.minecraft.resources.ResourceLocation;
  * 服务端 -> 客户端的 HUD 同步包。
  *
  * <p>玩法规则完全在服务端，客户端只负责显示，所以这里只传“显示所需的最小信息”：
- * 剩余 tick、是否有附加信息（位置互换的目的地）、以及生命池数值。
+ * 是否周期型（决定要不要显示倒计时）、剩余 tick、是否有附加信息（位置互换的目的地）、以及共享条数值。
  * 文案不传字符串，而是让客户端用翻译键自行组装，保证语言文件仍然有效。</p>
  */
 public record GameplayHudPayload(
         String gameplayId,
         boolean active,
+        boolean periodic,
         int remainingTicks,
         boolean hasDetail,
         String detailLabel,
@@ -36,10 +37,11 @@ public record GameplayHudPayload(
             GameplayHudPayload::encode,
             GameplayHudPayload::decode);
 
-    public GameplayHudPayload(String gameplayId, boolean active, int remainingTicks,
+    public GameplayHudPayload(String gameplayId, boolean active, boolean periodic, int remainingTicks,
                               @Nullable Gameplay.HudDetail detail, @Nullable Gameplay.PoolStatus pool) {
         this(gameplayId,
                 active,
+                periodic,
                 remainingTicks,
                 detail != null,
                 detail != null ? detail.label() : "",
@@ -54,6 +56,7 @@ public record GameplayHudPayload(
     private static void encode(FriendlyByteBuf buf, GameplayHudPayload payload) {
         buf.writeUtf(payload.gameplayId, 64);
         buf.writeBoolean(payload.active);
+        buf.writeBoolean(payload.periodic);
         buf.writeVarInt(payload.remainingTicks);
         buf.writeBoolean(payload.hasDetail);
         if (payload.hasDetail) {
@@ -72,6 +75,7 @@ public record GameplayHudPayload(
     private static GameplayHudPayload decode(FriendlyByteBuf buf) {
         String gameplayId = buf.readUtf(64);
         boolean active = buf.readBoolean();
+        boolean periodic = buf.readBoolean();
         int remainingTicks = buf.readVarInt();
         boolean hasDetail = buf.readBoolean();
         String label = "";
@@ -91,7 +95,7 @@ public record GameplayHudPayload(
             poolCurrent = buf.readDouble();
             poolMax = buf.readDouble();
         }
-        return new GameplayHudPayload(gameplayId, active, remainingTicks, hasDetail, label, x, y, z,
+        return new GameplayHudPayload(gameplayId, active, periodic, remainingTicks, hasDetail, label, x, y, z,
                 hasPool, poolCurrent, poolMax);
     }
 
